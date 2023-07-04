@@ -29,7 +29,7 @@ cargo run "$home/Downloads/test.md"
 
 会生成新文件 `$home/Downloads/out/test.md` 及对应的图片文件夹 `$home/Downloads/out/asset`
 
-## urls 转 markdown
+## urls 转 markdown 并将图片本地化
 
 如 `./urls_to_md.ps1 ./input.txt`. 输出到目录 `./output/out/`
 

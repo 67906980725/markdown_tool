@@ -27,7 +27,7 @@ cd ./md_pic_down
 cargo run "$home/Downloads/test.md"
 ```
 
-会生成新文件 `$home/Downloads/out/test.md` 及对应的图片文件夹 `$home/Downloads/out/asset`
+会生成新文件 `$home/Downloads/out/test.md` 及对应的图片文件夹 `$home/Downloads/out/.asset`
 
 ## urls 转 markdown 并将图片本地化
 

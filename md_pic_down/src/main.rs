@@ -65,7 +65,7 @@ pub fn trans_line_pics_to_local(parent_path_name: &str, line: &str) -> String {
         let suffix = Path::new(f_name_origin).extension().unwrap().to_str().unwrap();
         let f_name_new = format!("{}.{}", uuid, suffix);
 
-        let asset_dir_name = "asset";
+        let asset_dir_name = ".asset";
         let parent_path = Path::new(parent_path_name);
         let asset_path = parent_path.clone().join(&asset_dir_name);
         mkdir(asset_path.clone().to_str().unwrap());

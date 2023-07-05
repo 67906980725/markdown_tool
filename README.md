@@ -39,5 +39,5 @@ cargo run "$home/Downloads/test.md"
 
 ``` pwsh
 cd ./mdclean
-cargo run "$home/Downloads/md/artical/artical.md" "$home/Downloads/md/artical/.image"
+cargo run "$home/Downloads/md/artical/" "$home/Downloads/md/artical/.image"
 ```

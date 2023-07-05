@@ -1,6 +1,6 @@
 use std::env;
 
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::fs::File;
 use std::io::BufReader;
 use std::io::prelude::*;
@@ -145,7 +145,8 @@ pub fn fill_path_to_full(parent_path: &str, file_path: &str) -> String {
 
 pub fn get_local_links(line: &str) -> Vec<String> {
     // let md_img_re = Regex::new("!\\[(?P<alt>.*?)]\\((?P<src>[^ ]*) *\"?(?P<title>.*?)\"??\\)").unwrap();
-    let md_img_re: Regex = Regex::new(r"!\[]\(([^)]+)\)").unwrap();
+    // let md_img_re: Regex = Regex::new(r"!\[]\(([^)]+)\)").unwrap();
+    let md_img_re: Regex = Regex::new(r"!\[.*?\]\((.*?)\)").unwrap();
     let tag_img_re = Regex::new("<img.*?src=[\'\"](?P<src>.*?)[\'\"].*?>").unwrap();
 
     let tag_srcs = tag_img_re.captures_iter(line).

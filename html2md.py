@@ -440,6 +440,8 @@ class HTML2Text(HTMLParser.HTMLParser):
                     self.p()
                 else:
                     self.soft_br()
+            if self.astack: # 兼容知,乎<a><dir></dia></a>的情况
+                self.p_p = 0
             else:
                 self.p()
 

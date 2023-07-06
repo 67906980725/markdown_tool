@@ -1,18 +1,6 @@
 # markdown 文件工具
 
-依赖 powershell python pip rust
-
-``` pwsh
-winget install Rustlang.Rustup
-winget install Rustlang.Rust.MSVC
-winget install Rustlang.Rust.GNU
-
-winget install 9NRWMJP3717K # Python 3.11
-
-python -m ensurepip --default-pip
-pip install requests
-pip install bs4
-```
+安装依赖 `./install.ps1`
 
 ## url 转 markdown
 
@@ -23,8 +11,8 @@ pip install bs4
 如
 
 ``` pwsh
-cd ./md_pic_down
-cargo run "$home/Downloads/test.md"
+cd ./md_tool_rust
+cargo run "pic_down" "$home/Downloads/test.md"
 ```
 
 会生成新文件 `$home/Downloads/out/test.md` 及对应的图片文件夹 `$home/Downloads/out/.asset`
@@ -38,6 +26,6 @@ cargo run "$home/Downloads/test.md"
 如
 
 ``` pwsh
-cd ./mdclean
-cargo run "$home/Downloads/md/artical/" "$home/Downloads/md/artical/.image"
+cd ./md_tool_rust
+cargo run "pic_clean" "$home/Downloads/md/artical/" "$home/Downloads/md/artical/.image"
 ```

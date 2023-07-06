@@ -1,14 +1,8 @@
-# winget install Rustlang.Rustup
-# winget install Rustlang.Rust.MSVC
-# winget install Rustlang.Rust.GNU
-
-# winget install 9NRWMJP3717K # Python 3.11
-
-# python -m ensurepip --default-pip
-# pip install requests
-# pip install bs4
+# eg: ./urls_to_md.ps1 ./input.txt
 
 param([string] $file)
+
+New-Item output -ItemType Directory -ErrorAction SilentlyContinue
 
 foreach($line in Get-Content $file) {
   if([string]::IsNullOrEmpty($line) -or $line.StartsWith("#")) {
@@ -16,16 +10,13 @@ foreach($line in Get-Content $file) {
   }
   
   $url = $line.Trim()
-  $title = & python ./url_title.py "$url"
-  # $title
-  
-  python ./html2md.py "$url"
-  New-Item output -ItemType Directory -ErrorAction SilentlyContinue
+  $title = & python ./md_tool_py/url_title.py "$url"
   $new_file_path = "./output/${title}.md"
+  python ./md_tool_py/html2md.py "$url"
   Move-Item -Force -Path ./html2markdown.md -Destination "$new_file_path"
   $new_file_full_path = Resolve-Path -Path "$new_file_path"
   
-  Push-Location ./md_pic_down
-  cargo run "$new_file_full_path"
+  Push-Location ./md_tool_rust
+  cargo run "pic_down" "$new_file_full_path"
   Pop-Location
 }

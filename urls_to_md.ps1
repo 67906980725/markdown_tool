@@ -1,6 +1,6 @@
 # eg: ./urls_to_md.ps1 ./input.txt
 
-param([string] $file)
+param([string] $file = "./input.txt")
 
 New-Item output -ItemType Directory -ErrorAction SilentlyContinue
 

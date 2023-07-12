@@ -6,8 +6,10 @@ use std::io::BufReader;
 use std::io::{BufWriter, LineWriter, Write};
 use std::io::copy;
 use std::io::prelude::*;
+use std::sync::atomic::{AtomicU32, Ordering};
+use std::sync::Arc;
 
-use uuid::Uuid;
+// use uuid::Uuid;
 use regex::Regex;
 use reqwest::blocking::get;
 use reqwest::Url;
@@ -42,9 +44,10 @@ pub fn trans_md_pics_to_local(md_path: &str) {
   let new_file = File::create(new_file_path).unwrap();
   let mut writer = LineWriter::new(BufWriter::new(new_file));
 
+  let cnt = Arc::new(AtomicU32::new(0));
   buf_reader.lines()
     .filter(|line_r| line_r.is_ok())
-    .map(|line_r| trans_line_pics_to_local(line_r.unwrap().as_str(),&out_path_name, & &file_name_less_suffix))
+    .map(|line_r| trans_line_pics_to_local(line_r.unwrap().as_str(),&out_path_name, & &file_name_less_suffix, cnt.clone()))
     .for_each(|line| {
       writer.write_all(line.as_bytes()).unwrap();
       writer.write_all("\n".as_bytes()).unwrap();
@@ -58,16 +61,20 @@ pub fn mkdir(path: &str) {
   }
 }
 
-pub fn trans_line_pics_to_local(line: &str, parent_path_name: &str, md_name: &str) -> String {
+pub fn trans_line_pics_to_local(line: &str,
+                                parent_path_name: &str,
+                                md_name: &str,
+                                cnt: Arc<AtomicU32>) -> String {
   let re: Regex = Regex::new(r"!\[.*?]\((.*?)\)").unwrap();
   re.replace_all(&line, |capture: &regex::Captures| {
-    trans_line_one_pic_to_local(capture, &parent_path_name, &md_name)
+    trans_line_one_pic_to_local(capture, &parent_path_name, &md_name, cnt.clone())
   }).to_string()
 }
 
 pub fn trans_line_one_pic_to_local(capture: &regex::Captures,
                                    parent_path_name: &str,
-                                   md_name: &str) -> String {
+                                   md_name: &str,
+                                   cnt: Arc<AtomicU32>) -> String {
   let url = match capture.get(1) {
     Some(matched) => matched.as_str(),
     None => return String::default(),
@@ -81,7 +88,9 @@ pub fn trans_line_one_pic_to_local(capture: &regex::Captures,
     None => return String::from(url),
   };
   let pic_suffix = Path::new(&pic_origin_name).extension().and_then(OsStr::to_str).unwrap_or("");
-  let uuid = Uuid::new_v4().to_string();
+  // let uuid = Uuid::new_v4().to_string();
+  let n = cnt.fetch_add(1, Ordering::SeqCst);
+  let uuid = format!("{:0>3}", n);
   let f_name_new = format!("{}.{}", uuid, &pic_suffix);
 
   let asset_dir_name = ".asset";

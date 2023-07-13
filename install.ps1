@@ -21,6 +21,18 @@ function install_md_tool_rust {
   
 }
 
+
+function urls_to_md {
+  $l_file = "$PSScriptRoot\urls_to_md.lnk"
+  
+  $l = (New-Object -ComObject WScript.Shell).CreateShortcut($l_file)
+  $l.WorkingDirectory = $PSScriptRoot
+  $l.TargetPath = "pwsh.exe"
+  $l.Arguments = "-File urls_to_md.ps1"
+  $l.Save()
+}
+
+
 function main {
   if ($IsWindows) {
     install_win
@@ -28,6 +40,7 @@ function main {
   
   }
   install_py
+  urls_to_md
 }
 
 main

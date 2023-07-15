@@ -19,5 +19,4 @@ foreach($line in Get-Content $file) {
   Push-Location ./md_tool_rust
   cargo run "pic_down" "$new_file_full_path"
   Pop-Location
-
 }

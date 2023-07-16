@@ -25,6 +25,8 @@ def has_key(x, y):
         return y in x
 
 
+from bs4 import BeautifulSoup
+
 try:
     import htmlentitydefs
     import urlparse
@@ -891,6 +893,22 @@ def escape_md_section(text, snob=False):
     return text
 
 
+def zhihu_fix(text):
+    soup = BeautifulSoup(text, 'html.parser')
+    a_tag = soup.find('a')
+    # 如果a标签中有img标签，将img标签提取到a标签前
+    if a_tag.img:
+        img_tag = a_tag.img.extract()
+        a_tag.insert_before(img_tag)
+    # 如果a标签中有div或span标签，将div或span标签的文字内容提取到a标签中并移除a标签中的div或span标签
+    for tag in ['div', 'span']:
+        if a_tag.find(tag):
+            tag_content = a_tag.find(tag).text
+            a_tag.find(tag).extract()
+            a_tag.string = tag_content
+    return soup.prettify()
+
+
 def main():
     baseurl = ''
 
@@ -952,6 +970,9 @@ def main():
         data = sys.stdin.read()
 
     data = data.decode(encoding)
+    data = zhihu_fix(data)
+    # print(data)
+
     h = HTML2Text(baseurl=baseurl)
     # handle options
     if options.ul_style_dash: h.ul_item_mark = '-'

@@ -2,6 +2,8 @@
 
 param([string] $file = "./input.txt")
 
+Push-Location $PSScriptRoot
+
 New-Item output -ItemType Directory -ErrorAction SilentlyContinue
 
 function process_url([string] $url) {
@@ -29,3 +31,9 @@ if ($lineCount -gt 0) {
   $url = Read-Host "Enter the url you want to down"
   process_url $url
 }
+
+Push-Location $PSScriptRoot/output
+Remove-Item ./*.md
+Pop-Location
+
+Pop-Location

@@ -18,6 +18,21 @@ function process_url([string] $url) {
   Pop-Location
 }
 
+function Read-MultiLineText {
+    $lines = @()
+    
+    while ($true) {
+        $line = Read-Host
+        if ($line -eq "") {
+            break
+        }
+        $lines += $line
+    }
+    
+    return $lines -join "`n"
+}
+
+
 $lineCount = Get-Content -Path $file | Measure-Object -Line | Select-Object -ExpandProperty Lines
 if ($lineCount -gt 0) {
   foreach($line in Get-Content $file) {
@@ -28,8 +43,13 @@ if ($lineCount -gt 0) {
     process_url $url
   }
 } else {
-  $url = Read-Host "Enter the url you want to down"
-  process_url $url
+  "Enter the urls you want to down"
+  $line = Read-Host
+  while (-not [string]::IsNullOrEmpty($line) -and -not $line.StartsWith("#")) {
+    process_url $line
+    $line = Read-Host
+  }
+  
 }
 
 Push-Location $PSScriptRoot/output

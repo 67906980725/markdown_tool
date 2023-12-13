@@ -854,10 +854,13 @@ def skipwrap(para):
         return True
     return False
 
-def wrapwrite(text):
+def wrapwrite(text, f_name):
     text = text.encode('utf-8')
+    if f_name == 'stdout':
+        sys.stdout.buffer.write(text)
+        return
+    
     try:  # Python3
-        # sys.stdout.buffer.write(text)
         file = open(f_name, "w")
         file.buffer.write(text)
         file.close()
@@ -909,9 +912,78 @@ def zhihu_fix(text):
     return soup.prettify()
 
 
+def html2md(data, baseurl, options, out_file):
+
+    data = zhihu_fix(data)
+    # print(data)
+
+    h = HTML2Text(baseurl=baseurl)
+    # handle options
+    if options.ul_style_dash: h.ul_item_mark = '-'
+    if options.em_style_asterisk:
+        h.emphasis_mark = '*'
+        h.strong_mark = '__'
+
+    h.body_width = options.body_width
+    h.list_indent = options.list_indent
+    h.ignore_emphasis = options.ignore_emphasis
+    h.ignore_links = options.ignore_links
+    h.ignore_images = options.ignore_images
+    h.google_doc = options.google_doc
+    h.hide_strikethrough = options.hide_strikethrough
+    h.escape_snob = options.escape_snob
+
+    r = h.handle(data)
+    wrapwrite(r, out_file)
+    
+def url2html(baseurl, encoding = None):
+    header = {
+        'User-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'cookie': ''
+    }
+    # j = urllib.urlopen(baseurl)
+    Res = urllib.Request(baseurl, headers = header)
+    j = urllib.urlopen(Res)
+    
+    data = j.read()
+    
+    if encoding is None:
+        try:
+            from feedparser import _getCharacterEncoding as enc
+        except ImportError:
+            enc = lambda x, y: ('utf-8', 1)
+        encoding = enc(j.headers, data)[0]
+        if encoding == 'us-ascii':
+            encoding = 'utf-8'
+    html = data.decode(encoding)
+    return html
+
+def file2html(file_, encoding):
+    data = open(file_, 'rb').read()
+    if encoding is None:
+        try:
+            from chardet import detect
+        except ImportError:
+            detect = lambda x: {'encoding': 'utf-8'}
+        encoding = detect(data)['encoding']
+    html = data.decode(encoding)
+    return html
+    
+def url2md(baseurl, out_file = 'stdout', options = None):
+    data = url2html(baseurl)
+    if options is None:
+        options = HTML2Text()
+        options.ul_style_dash = False
+        options.em_style_asterisk = False
+        options.list_indent = GOOGLE_LIST_INDENT
+        options.hide_strikethrough = False
+    html2md(data, baseurl, options, out_file)
+
 def main():
     baseurl = ''
-
+    encoding = "utf-8"
+    
+    # process input
     p = optparse.OptionParser('%prog [(filename|url) [encoding]]',
                               version='%prog ' + __version__)
     p.add_option("--ignore-emphasis", dest="ignore_emphasis", action="store_true",
@@ -937,8 +1009,6 @@ def main():
                  help="Escape all special characters.  Output is less readable, but avoids corner case formatting issues.")
     (options, args) = p.parse_args()
 
-    # process input
-    encoding = "utf-8"
     if len(args) > 0:
         file_ = args[0]
         if len(args) == 2:
@@ -948,50 +1018,15 @@ def main():
 
         if file_.startswith('http://') or file_.startswith('https://'):
             baseurl = file_
-            j = urllib.urlopen(baseurl)
-            data = j.read()
-            if encoding is None:
-                try:
-                    from feedparser import _getCharacterEncoding as enc
-                except ImportError:
-                    enc = lambda x, y: ('utf-8', 1)
-                encoding = enc(j.headers, data)[0]
-                if encoding == 'us-ascii':
-                    encoding = 'utf-8'
+            data=url2html(file_, encoding)
         else:
-            data = open(file_, 'rb').read()
-            if encoding is None:
-                try:
-                    from chardet import detect
-                except ImportError:
-                    detect = lambda x: {'encoding': 'utf-8'}
-                encoding = detect(data)['encoding']
+            data=file2html(file_, encoding)
     else:
         data = sys.stdin.read()
+        data = data.decode(encoding)
 
-    data = data.decode(encoding)
-    data = zhihu_fix(data)
-    # print(data)
-
-    h = HTML2Text(baseurl=baseurl)
-    # handle options
-    if options.ul_style_dash: h.ul_item_mark = '-'
-    if options.em_style_asterisk:
-        h.emphasis_mark = '*'
-        h.strong_mark = '__'
-
-    h.body_width = options.body_width
-    h.list_indent = options.list_indent
-    h.ignore_emphasis = options.ignore_emphasis
-    h.ignore_links = options.ignore_links
-    h.ignore_images = options.ignore_images
-    h.google_doc = options.google_doc
-    h.hide_strikethrough = options.hide_strikethrough
-    h.escape_snob = options.escape_snob
-
-    r = h.handle(data)
-    wrapwrite(r)
-
-
+    html2md(data, baseurl, options, f_name)
+    
 if __name__ == "__main__":
+    # url2md('', '1.md')
     main()
